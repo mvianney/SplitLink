@@ -5,13 +5,48 @@ type Props = {
   animate?: boolean;
 };
 
+const GREEN = "#39FF14";
+const EDGE = "#1E9E0A";
+
+// Lightning-S cut points — shared by both halves.
+const S = {
+  top: [32, 2] as const,
+  p1: [44, 22] as const,
+  p2: [24, 34] as const,
+  p3: [40, 42] as const,
+  bottom: [32, 62] as const,
+};
+
+const leftHalfD = `
+  M ${S.top[0]} ${S.top[1]}
+  L ${S.p1[0]} ${S.p1[1]}
+  L ${S.p2[0]} ${S.p2[1]}
+  L ${S.p3[0]} ${S.p3[1]}
+  L ${S.bottom[0]} ${S.bottom[1]}
+  A 30 30 0 0 0 ${S.top[0]} ${S.top[1]}
+  Z
+`;
+
+const rightHalfD = `
+  M ${S.top[0]} ${S.top[1]}
+  L ${S.p1[0]} ${S.p1[1]}
+  L ${S.p2[0]} ${S.p2[1]}
+  L ${S.p3[0]} ${S.p3[1]}
+  L ${S.bottom[0]} ${S.bottom[1]}
+  A 30 30 0 0 1 ${S.top[0]} ${S.top[1]}
+  Z
+`;
+
+const leftRimD = `M 32 6 A 26 26 0 0 0 32 58`;
+const rightRimD = `M 32 6 A 26 26 0 0 1 32 58`;
+
 export default function Logo({
   size = 32,
   split = false,
   className = "",
   animate = true,
 }: Props) {
-  const shift = split ? 4 : 0;
+  const shift = split ? 4 : 1.5;
   const trans = animate ? "transition-transform duration-200 ease-out" : "";
 
   return (
@@ -24,34 +59,46 @@ export default function Logo({
       className={className}
       aria-hidden="true"
     >
-      {/* Left half of coin */}
-      <g className={trans} style={{ transform: `translateX(${-shift}px)` }}>
+      {/* Left half */}
+      <g
+        className={trans}
+        style={{ transform: `translate(${-shift}px, ${-shift}px)` }}
+      >
         <path
-          d="M32 6 A26 26 0 0 0 32 58 L28 46 L22 42 L24 36 L18 32 L24 28 L22 22 L28 18 Z"
-          fill="#39FF14"
+          d={leftHalfD}
+          fill={GREEN}
           stroke="#000"
-          strokeWidth="2"
+          strokeWidth={3}
           strokeLinejoin="round"
         />
-      </g>
-      {/* Right half of coin */}
-      <g className={trans} style={{ transform: `translateX(${shift}px)` }}>
         <path
-          d="M32 6 A26 26 0 0 1 32 58 L36 46 L42 42 L40 36 L46 32 L40 28 L42 22 L36 18 Z"
-          fill="#39FF14"
-          stroke="#000"
-          strokeWidth="2"
-          strokeLinejoin="round"
+          d={leftRimD}
+          fill="none"
+          stroke={EDGE}
+          strokeWidth={1.5}
+          strokeLinecap="round"
         />
       </g>
-      {/* Lightning S cut */}
-      <path
-        d="M34 14 L24 32 L31 32 L26 50 L40 30 L33 30 Z"
-        fill="#000"
-        stroke="#000"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
+      {/* Right half */}
+      <g
+        className={trans}
+        style={{ transform: `translate(${shift}px, ${shift}px)` }}
+      >
+        <path
+          d={rightHalfD}
+          fill={GREEN}
+          stroke="#000"
+          strokeWidth={3}
+          strokeLinejoin="round"
+        />
+        <path
+          d={rightRimD}
+          fill="none"
+          stroke={EDGE}
+          strokeWidth={1.5}
+          strokeLinecap="round"
+        />
+      </g>
     </svg>
   );
 }

@@ -1,4 +1,5 @@
 import FloatingCoins from "@/components/FloatingCoins";
+import Highlight from "@/components/Highlight";
 import SplitButton from "@/components/SplitButton";
 
 export default function Hero() {
@@ -14,8 +15,8 @@ export default function Hero() {
           SplitLink
         </h1>
         <p className="mt-6 max-w-2xl text-balance text-lg text-white/80 sm:text-xl">
-          Split payments with your crew. Fairly, instantly, and without anyone
-          holding the money.
+          Split payments with your <Highlight>crew</Highlight>. Fairly,
+          instantly, and without anyone holding the money.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <SplitButton href="/signup" variant="primary">

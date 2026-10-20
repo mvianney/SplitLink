@@ -1,5 +1,6 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import Ribbon from "@/components/Ribbon";
 import Hero from "@/components/landing/Hero";
 import About from "@/components/landing/About";
 import Problem from "@/components/landing/Problem";
@@ -14,11 +15,14 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
+        <Ribbon tilt={-2} />
         <About />
         <Problem />
         <Solution />
+        <Ribbon tilt={1.5} />
         <HowItWorks />
         <Future />
+        <Ribbon tilt={-1.5} />
         <FinalCta />
       </main>
       <Footer />
