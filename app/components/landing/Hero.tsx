@@ -1,12 +1,13 @@
-import FloatingCoins from "@/components/FloatingCoins";
+import HeroCoins from "@/components/HeroCoins";
 import Highlight from "@/components/Highlight";
 import SplitButton from "@/components/SplitButton";
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <FloatingCoins />
-      <div className="relative mx-auto flex max-w-5xl flex-col items-center px-5 pb-24 pt-20 text-center sm:pt-28">
+    <section className="relative overflow-hidden md:min-h-[calc(100svh-80px)]">
+      <HeroCoins />
+      {/* Clicks pass through the text to the coins; only the buttons catch them. */}
+      <div className="pointer-events-none relative mx-auto flex max-w-5xl flex-col items-center px-5 pb-40 pt-20 text-center sm:pt-28 md:pb-24">
         <span className="mb-6 inline-flex items-center gap-2 border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-1 text-xs text-white/80">
           <span className="h-2 w-2 bg-[var(--color-accent)]" />
           Finance without intermediaries · Solana devnet
@@ -18,7 +19,7 @@ export default function Hero() {
           Split payments with your <Highlight>crew</Highlight>. Fairly,
           instantly, and without anyone holding the money.
         </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <div className="pointer-events-auto mt-10 flex flex-wrap items-center justify-center gap-4">
           <SplitButton href="/signup" variant="primary">
             Sign up
           </SplitButton>

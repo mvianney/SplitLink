@@ -57,6 +57,11 @@ body {
   75% { transform: translateY(-2px) rotate(-1deg); }
 }
 
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes split-pulse {
   0% { transform: translateX(0); }
   40% { transform: translateX(-3px); }

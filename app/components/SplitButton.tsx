@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type ReactNode, type MouseEvent } from "react";
-import Logo from "./Logo";
+import { halfPath } from "@/lib/splitMark";
 
 type Variant = "primary" | "ghost";
 
@@ -104,23 +104,13 @@ export default function SplitButton(props: Props) {
   );
 }
 
+// Halves of the ⚡ split coin (same shape as the logo).
+const HALF_D = { left: halfPath("left", 20, 1), right: halfPath("right", 20, 1) };
+
 function HalfCoin({ side, color }: { side: "left" | "right"; color: string }) {
-  if (side === "left") {
-    return (
-      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-        <path
-          d="M10 1 A9 9 0 0 0 10 19 L7 15 L5 10 L7 5 Z"
-          fill={color}
-        />
-      </svg>
-    );
-  }
   return (
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-      <path
-        d="M10 1 A9 9 0 0 1 10 19 L13 15 L15 10 L13 5 Z"
-        fill={color}
-      />
+      <path d={HALF_D[side]} fill={color} />
     </svg>
   );
 }
