@@ -1,3 +1,6 @@
+import type { ReactNode } from "react";
+import { halfPath } from "@/lib/splitMark";
+
 type Pose = "worried" | "excited";
 
 type Props = {
@@ -5,388 +8,383 @@ type Props = {
   className?: string;
 };
 
-const STROKE = "#000";
-const SW = 3.75;
+// Flat, thick-outline cartoon, framed in a big circle (the way gumroad.com fits its
+// characters into the page). Coin head, white tee, green hands. Upper body only:
+// the circle crops the bottom.
+
+const INK = "#000";
+const SW = 4;
 const GREEN = "#39FF14";
-const EDGE = "#1E9E0A";
-const SHADOW = "#0f6b05";
-const WHITE = "#ffffff";
-const CARD = "#1A1A1A";
+const WHITE = "#fff";
+const RED = "#FF4D4D";
+const SCREEN = "#141414";
+
+const CX = 200; // scene circle
+const CY = 212;
+const CR = 178;
+
+const MARK_L = halfPath("left", 20, 1);
+const MARK_R = halfPath("right", 20, 1);
 
 export default function Mascot({ pose, className = "" }: Props) {
-  const bodyAnim =
-    pose === "worried"
-      ? "mascot-shake 2.6s ease-in-out infinite"
-      : "mascot-bounce 1.8s ease-in-out infinite";
+  const worried = pose === "worried";
+  const clipId = `sl-mascot-clip-${pose}`;
 
   return (
     <svg
-      viewBox="0 0 420 500"
+      viewBox="0 0 400 400"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       role="img"
-      aria-label={pose === "worried" ? "Worried SplitLink mascot" : "Excited SplitLink mascot"}
+      aria-label={
+        worried
+          ? "SplitLink mascot, worried, reading “I'll send it later…” on their phone"
+          : "SplitLink mascot celebrating a payout on their phone"
+      }
     >
-      {/* Big backdrop circle */}
-      <circle cx="210" cy="240" r="200" fill={CARD} />
+      <defs>
+        {/* Bottom half is cropped by the circle; the top can spill over it. */}
+        <clipPath id={clipId}>
+          <circle cx={CX} cy={CY} r={CR - 2} />
+          <rect x="0" y="0" width="400" height={CY} />
+        </clipPath>
+      </defs>
 
-      {/* Doodles behind */}
-      <Doodles pose={pose} />
+      <circle cx={CX} cy={CY} r={CR} fill={worried ? RED : GREEN} />
 
-      {/* Hard offset shadow of the body — down-left */}
-      <g transform="translate(-14 10)" opacity="0.9">
-        <Body pose={pose} shadow />
-      </g>
+      {worried ? <Worried clipId={clipId} /> : <Excited clipId={clipId} />}
 
-      {/* Body */}
-      <g style={{ transformOrigin: "210px 320px", animation: bodyAnim }}>
-        <Body pose={pose} />
-      </g>
-
-      <style>{`
-        @keyframes mascot-shake {
-          0%, 100% { transform: translate(0,0) rotate(-1.5deg); }
-          25% { transform: translate(-2px,0) rotate(1.5deg); }
-          50% { transform: translate(0,-2px) rotate(-1deg); }
-          75% { transform: translate(2px,0) rotate(1deg); }
-        }
-        @keyframes mascot-bounce {
-          0%, 100% { transform: translateY(0) rotate(-2deg); }
-          50% { transform: translateY(-10px) rotate(2deg); }
-        }
-        @keyframes mascot-wave {
-          0%, 100% { transform: rotate(-6deg); }
-          50% { transform: rotate(14deg); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          svg [style*="animation"] { animation: none !important; }
-        }
-      `}</style>
+      <style>{STYLES}</style>
     </svg>
   );
 }
 
-/* ------------------------------------------------------------------ */
+/* ---------------------------------------------------------------- parts */
 
-function Body({ pose, shadow = false }: { pose: Pose; shadow?: boolean }) {
-  // Shadow silhouette: everything a solid dark green, same shapes.
-  // Otherwise: coloured.
-  const fillBody = shadow ? SHADOW : WHITE;
-  const fillAccent = shadow ? SHADOW : GREEN;
-  const fillHead = shadow ? SHADOW : GREEN;
-  const fillShoe = shadow ? SHADOW : GREEN;
-  const strokeC = shadow ? SHADOW : STROKE;
-
+/** Outlined tube for arms: black under-stroke, coloured over-stroke. */
+function Arm({ d, hand }: { d: string; hand?: [number, number] }) {
   return (
-    <g
-      fill={fillBody}
-      stroke={strokeC}
-      strokeWidth={SW}
-      strokeLinejoin="round"
-      strokeLinecap="round"
-    >
-      {/* ----- Legs & sneakers ----- */}
-      {/* Pants */}
-      <path d="M172 318 L172 418 L202 418 L204 318 Z" />
-      <path d="M216 318 L218 418 L248 418 L248 318 Z" />
-      {/* Outer stripes */}
-      <rect x="170" y="325" width="5" height="80" fill={fillAccent} stroke="none" />
-      <rect x="245" y="325" width="5" height="80" fill={fillAccent} stroke="none" />
-      {/* Ankle cuffs */}
-      <rect x="167" y="408" width="38" height="12" fill={fillAccent} />
-      <rect x="215" y="408" width="38" height="12" fill={fillAccent} />
-      {/* Knee patches */}
-      <circle cx="188" cy="365" r="7" fill={fillAccent} stroke={strokeC} strokeWidth={SW * 0.6} />
-      <circle cx="232" cy="365" r="7" fill={fillAccent} stroke={strokeC} strokeWidth={SW * 0.6} />
+    <g strokeLinecap="round" strokeLinejoin="round" fill="none">
+      <path d={d} stroke={INK} strokeWidth={22} />
+      <path d={d} stroke={WHITE} strokeWidth={14} />
+      {hand && <Hand x={hand[0]} y={hand[1]} />}
+    </g>
+  );
+}
 
-      {/* High-top sneakers */}
-      <g>
-        {/* Left sneaker */}
-        <path
-          d="M160 420 Q152 428 154 442 L160 452 L212 452 L212 420 Z"
-          fill={fillShoe}
-        />
-        {/* Right sneaker */}
-        <path
-          d="M208 420 L208 452 L260 452 L266 442 Q268 428 260 420 Z"
-          fill={fillShoe}
-        />
-        {!shadow && (
-          <>
-            {/* Laces */}
-            <path d="M172 434 L204 434 M174 442 L206 442" stroke={STROKE} strokeWidth={2.5} fill="none" />
-            <path d="M216 434 L248 434 M218 442 L250 442" stroke={STROKE} strokeWidth={2.5} fill="none" />
-            {/* Sole stripe */}
-            <path d="M154 450 L212 450 M208 450 L266 450" stroke={STROKE} strokeWidth={2.5} fill="none" />
-          </>
-        )}
-      </g>
+function Hand({ x, y }: { x: number; y: number }) {
+  return <circle cx={x} cy={y} r={11} fill={GREEN} stroke={INK} strokeWidth={SW} />;
+}
 
-      {/* ----- Torso ----- */}
-      {/* Rounded rectangle, broad shoulders, no flare */}
+function Torso() {
+  return (
+    <g stroke={INK} strokeWidth={SW} strokeLinejoin="round" strokeLinecap="round">
       <path
-        d="M158 212
-           Q158 198 172 198
-           L248 198
-           Q262 198 262 212
-           L262 316
-           Q262 322 256 322
-           L164 322
-           Q158 322 158 316
-           Z"
+        d="M146 430 L146 304 Q146 268 182 266 L218 266 Q254 268 254 304 L254 430 Z"
+        fill={WHITE}
       />
-      {/* Trim: horizontal belt */}
-      <rect x="158" y="300" width="104" height="7" fill={fillAccent} stroke="none" />
-      {/* Trim: V-chest straps */}
-      <path
-        d="M186 198 L210 240 L234 198"
-        fill="none"
-        stroke={fillAccent}
-        strokeWidth={5}
-      />
-
-      {/* ----- Chest badge (split logo) ----- */}
-      {!shadow && <ChestBadge cx={210} cy={275} r={16} />}
-
-      {/* ----- Arms (behind torso) ----- */}
-      {pose === "worried" ? <WorriedArms shadow={shadow} /> : <ExcitedArms shadow={shadow} />}
-
-      {/* ----- Neck ----- */}
-      <rect x="200" y="178" width="20" height="24" fill={fillBody} />
-
-      {/* ----- Head ----- */}
-      <g>
-        {/* Shoulder caps (patches on top of torso where arms meet) */}
-        <circle cx="165" cy="210" r="12" fill={fillAccent} stroke={strokeC} strokeWidth={SW * 0.8} />
-        <circle cx="255" cy="210" r="12" fill={fillAccent} stroke={strokeC} strokeWidth={SW * 0.8} />
-
-        {/* Head coin */}
-        <circle cx="210" cy="130" r="60" fill={fillHead} />
-        <circle cx="210" cy="130" r="52" fill="none" stroke={strokeC} strokeWidth={2.5} />
-        {!shadow && <Face pose={pose} />}
+      <path d="M182 268 Q200 288 218 268" fill="none" />
+      {/* tiny split-coin badge on the chest */}
+      <g transform="translate(214 312)">
+        <path d={MARK_L} fill={GREEN} strokeWidth={2} />
+        <path d={MARK_R} fill={GREEN} strokeWidth={2} />
       </g>
     </g>
   );
 }
 
-/* ------------------------------------------------------------------ */
-
-function WorriedArms({ shadow }: { shadow: boolean }) {
-  const fillBody = shadow ? SHADOW : WHITE;
-  const fillAccent = shadow ? SHADOW : GREEN;
-  const strokeC = shadow ? SHADOW : STROKE;
+/** The head is a coin: a back copy offset down-right shows its thickness. */
+function CoinHead({ children }: { children: ReactNode }) {
   return (
-    <g fill={fillBody} stroke={strokeC} strokeWidth={SW} strokeLinejoin="round" strokeLinecap="round">
-      {/* Left arm — bent elbow, slight hunch */}
-      <g>
-        {/* Upper arm shoulder → elbow */}
-        <path d="M158 215 L138 266 L156 274 L178 220 Z" />
-        {/* Elbow patch */}
-        <circle cx="148" cy="266" r="8" fill={fillAccent} stroke={strokeC} strokeWidth={SW * 0.6} />
-        {/* Forearm elbow → hand */}
-        <path d="M138 266 L140 320 L160 320 L156 274 Z" />
-        {/* Mitten hand */}
-        <circle cx="150" cy="330" r="18" fill={fillBody} />
-        {!shadow && <path d="M138 334 Q150 342 162 334" stroke={STROKE} strokeWidth={2} fill="none" />}
-        {/* Tiny broken coin piece */}
-        {!shadow && (
-          <path
-            d="M140 335 L160 335 L164 348 L136 348 Z"
-            fill={GREEN}
-            stroke={STROKE}
-            strokeWidth={2}
-          />
-        )}
-      </g>
-
-      {/* Right arm — bent elbow */}
-      <g>
-        <path d="M262 215 L282 266 L264 274 L242 220 Z" />
-        <circle cx="272" cy="266" r="8" fill={fillAccent} stroke={strokeC} strokeWidth={SW * 0.6} />
-        <path d="M282 266 L280 320 L260 320 L264 274 Z" />
-        <circle cx="270" cy="330" r="18" fill={fillBody} />
-        {!shadow && <path d="M258 334 Q270 342 282 334" stroke={STROKE} strokeWidth={2} fill="none" />}
-      </g>
+    <g>
+      <circle cx={207} cy={197} r={72} fill={GREEN} stroke={INK} strokeWidth={SW} />
+      <circle cx={200} cy={188} r={72} fill={GREEN} stroke={INK} strokeWidth={SW} />
+      {children}
     </g>
   );
 }
 
-function ExcitedArms({ shadow }: { shadow: boolean }) {
-  const fillBody = shadow ? SHADOW : WHITE;
-  const fillAccent = shadow ? SHADOW : GREEN;
-  const strokeC = shadow ? SHADOW : STROKE;
+/** Speech bubble with a lightning-bolt tail, like a comic shout. */
+function Bubble({
+  x,
+  y,
+  w,
+  h,
+  lines,
+  tail,
+  size = 22,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  lines: string[];
+  tail: string;
+  size?: number;
+}) {
+  const lh = size * 1.1;
+  const top = y + h / 2 - ((lines.length - 1) * lh) / 2 + size * 0.36;
   return (
-    <g fill={fillBody} stroke={strokeC} strokeWidth={SW} strokeLinejoin="round" strokeLinecap="round">
-      {/* Left arm — down, bent at elbow */}
-      <g>
-        <path d="M158 215 L138 266 L156 274 L178 220 Z" />
-        <circle cx="148" cy="266" r="8" fill={fillAccent} stroke={strokeC} strokeWidth={SW * 0.6} />
-        <path d="M138 266 L140 324 L160 324 L156 274 Z" />
-        <circle cx="150" cy="334" r="18" fill={fillBody} />
-        {!shadow && <path d="M138 338 Q150 346 162 338" stroke={STROKE} strokeWidth={2} fill="none" />}
-      </g>
-
-      {/* Right arm raised — upper up and out, forearm bent up, holding phone */}
-      <g
-        style={
-          shadow
-            ? undefined
-            : {
-                transformOrigin: "262px 215px",
-                animation: "mascot-wave 1.8s ease-in-out infinite",
-              }
-        }
+    <g>
+      <path d={tail} fill={WHITE} stroke={INK} strokeWidth={SW} strokeLinejoin="round" />
+      <rect x={x} y={y} width={w} height={h} rx={16} fill={WHITE} stroke={INK} strokeWidth={SW} />
+      <text
+        x={x + w / 2}
+        textAnchor="middle"
+        fontSize={size}
+        fontWeight={900}
+        letterSpacing="0.04em"
+        fill={INK}
+        style={{ fontFamily: "inherit" }}
       >
-        {/* Upper arm shoulder → elbow (raised up-right) */}
-        <path d="M262 215 L298 180 L312 196 L278 230 Z" />
-        <circle cx="305" cy="188" r="8" fill={fillAccent} stroke={strokeC} strokeWidth={SW * 0.6} />
-        {/* Forearm elbow → hand (up) */}
-        <path d="M298 180 L286 120 L304 112 L314 176 Z" />
-        {/* Mitten hand */}
-        <circle cx="295" cy="106" r="18" fill={fillBody} />
-        {!shadow && <path d="M283 110 Q295 118 307 110" stroke={STROKE} strokeWidth={2} fill="none" />}
-        {/* Phone in hand */}
-        {!shadow && <MiniPhone cx={295} cy={82} />}
+        {lines.map((l, i) => (
+          <tspan key={l} x={x + w / 2} y={top + i * lh}>
+            {l}
+          </tspan>
+        ))}
+      </text>
+    </g>
+  );
+}
+
+function Phone({ children }: { children: ReactNode }) {
+  return (
+    <g>
+      <rect x={-30} y={-44} width={60} height={88} rx={10} fill={INK} stroke={INK} strokeWidth={SW} />
+      <rect x={-24} y={-36} width={48} height={70} rx={5} fill={SCREEN} />
+      {children}
+    </g>
+  );
+}
+
+function MiniCoin({ x, y, r, className }: { x: number; y: number; r: number; className: string }) {
+  const s = r / 9;
+  return (
+    <g className={className}>
+      <g transform={`translate(${x - 10 * s} ${y - 10 * s}) scale(${s})`}>
+        <path d={MARK_L} fill={GREEN} stroke={INK} strokeWidth={2.4 / s} strokeLinejoin="round" />
+        <path d={MARK_R} fill={GREEN} stroke={INK} strokeWidth={2.4 / s} strokeLinejoin="round" />
       </g>
     </g>
   );
 }
 
-/* ------------------------------------------------------------------ */
+/* ---------------------------------------------------------------- poses */
 
-function Face({ pose }: { pose: Pose }) {
-  if (pose === "worried") {
-    return (
-      <g stroke="#000" strokeLinecap="round" strokeLinejoin="round" fill="#000">
-        {/* Brows up (worried) */}
-        <path d="M184 108 L198 100" strokeWidth={4} fill="none" />
-        <path d="M236 100 L222 108" strokeWidth={4} fill="none" />
-        {/* Eyes */}
-        <circle cx="193" cy="124" r="4" />
-        <circle cx="227" cy="124" r="4" />
-        {/* Wobbly mouth */}
-        <path
-          d="M190 152 Q198 142 206 152 T222 152 T232 150"
-          fill="none"
-          strokeWidth={4}
+function Worried({ clipId }: { clipId: string }) {
+  return (
+    <>
+      <g clipPath={`url(#${clipId})`}>
+        <Torso />
+
+        {/* Left arm: hangs, then scratches the head (two drawings swapped) */}
+        <g className="slm-arm-rest">
+          <Arm d="M158 292 Q134 340 150 392" hand={[150, 392]} />
+        </g>
+        <g className="slm-arm-scratch">
+          <g className="slm-scratch-wiggle">
+            <Arm d="M158 292 Q96 262 122 184" hand={[122, 184]} />
+          </g>
+        </g>
+
+        <CoinHead>
+          <g className="slm-glance">
+            {/* brows raised in the middle */}
+            <g stroke={INK} strokeWidth={SW} strokeLinecap="round" fill="none">
+              <path d="M184 166 L203 158" />
+              <path d="M241 166 L222 158" />
+              {/* wobbly mouth */}
+              <path d="M196 224 q7 -7 14 0 t14 0" />
+            </g>
+            <circle cx={198} cy={186} r={5.5} fill={INK} />
+            <circle cx={228} cy={186} r={5.5} fill={INK} />
+          </g>
+          {/* sweat drop */}
+          <path
+            className="slm-sweat"
+            d="M146 140 q-9 13 0 19 q9 -6 0 -19 z"
+            fill={WHITE}
+            stroke={INK}
+            strokeWidth={3}
+            strokeLinejoin="round"
+          />
+        </CoinHead>
+
+        {/* Right arm holds the phone out to read it */}
+        <Arm d="M242 292 Q272 346 276 298" />
+      </g>
+
+      <g transform="translate(298 262) rotate(9)">
+        <g className="slm-buzz">
+          <Phone>
+            <text
+              y={2}
+              textAnchor="middle"
+              fontSize={17}
+              fontWeight={900}
+              fill={RED}
+              style={{ fontFamily: "inherit" }}
+            >
+              $0.00
+            </text>
+            <text
+              y={20}
+              textAnchor="middle"
+              fontSize={8}
+              fontWeight={700}
+              fill="#9a9a9a"
+              style={{ fontFamily: "inherit" }}
+            >
+              pending…
+            </text>
+          </Phone>
+        </g>
+      </g>
+      {/* hand gripping the phone edge */}
+      <Hand x={276} y={298} />
+
+      <g className="slm-bob">
+        <Bubble
+          x={196}
+          y={30}
+          w={196}
+          h={74}
+          size={20}
+          lines={["I'LL SEND IT", "LATER…"]}
+          tail="M318 98 L304 150 L318 148 L300 214 L334 140 L320 142 L336 98 Z"
         />
-        {/* Sweat drop */}
-        <path
-          d="M250 118 Q258 130 250 140 Q242 130 250 118 Z"
-          fill="#9ad8ff"
-          stroke="#000"
-          strokeWidth={2.5}
+      </g>
+    </>
+  );
+}
+
+function Excited({ clipId }: { clipId: string }) {
+  return (
+    <>
+      <MiniCoin x={340} y={92} r={17} className="slm-coin slm-coin-1" />
+      <MiniCoin x={364} y={166} r={12} className="slm-coin slm-coin-2" />
+      <MiniCoin x={290} y={40} r={11} className="slm-coin slm-coin-3" />
+
+      <g clipPath={`url(#${clipId})`}>
+        <g className="slm-bounce">
+          <Torso />
+
+          {/* Right arm: fist pump */}
+          <g className="slm-pump">
+            <Arm d="M244 294 Q326 284 306 160" hand={[306, 160]} />
+          </g>
+
+          <CoinHead>
+            <g stroke={INK} strokeWidth={SW} strokeLinecap="round" fill="none">
+              {/* happy closed eyes */}
+              <path d="M172 186 q10 -12 20 0" />
+              <path d="M210 186 q10 -12 20 0" />
+            </g>
+            {/* big open smile */}
+            <path
+              d="M174 208 Q201 250 228 208 Z"
+              fill={INK}
+              stroke={INK}
+              strokeWidth={SW}
+              strokeLinejoin="round"
+            />
+            <path d="M190 228 Q201 238 212 228 Q206 222 201 224 Q196 222 190 228 Z" fill={RED} />
+          </CoinHead>
+
+          {/* Left arm holds the phone up */}
+          <Arm d="M158 292 Q110 336 110 290" />
+        </g>
+      </g>
+
+      <g transform="translate(96 248) rotate(-10)">
+        <g className="slm-bounce">
+          <Phone>
+            <circle cx={0} cy={-14} r={10} fill={GREEN} />
+            <path
+              d="M-5 -14 l3.5 3.5 l6.5 -7"
+              stroke={INK}
+              strokeWidth={3}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <text
+              y={14}
+              textAnchor="middle"
+              fontSize={15}
+              fontWeight={900}
+              fill={GREEN}
+              style={{ fontFamily: "inherit" }}
+            >
+              +$30
+            </text>
+            <text
+              y={27}
+              textAnchor="middle"
+              fontSize={7.5}
+              fontWeight={700}
+              fill="#9a9a9a"
+              style={{ fontFamily: "inherit" }}
+            >
+              claimed
+            </text>
+          </Phone>
+        </g>
+      </g>
+      <g className="slm-bounce">
+        <Hand x={110} y={290} />
+      </g>
+
+      <g className="slm-pulse">
+        <Bubble
+          x={14}
+          y={30}
+          w={150}
+          h={66}
+          size={30}
+          lines={["PAID!"]}
+          tail="M84 90 L74 132 L86 130 L74 186 L104 122 L92 124 L102 90 Z"
         />
       </g>
-    );
-  }
-  return (
-    <g stroke="#000" strokeLinecap="round" strokeLinejoin="round" fill="#000">
-      {/* Confident angled brows */}
-      <path d="M184 112 L202 118" strokeWidth={4} fill="none" />
-      <path d="M218 118 L236 112" strokeWidth={4} fill="none" />
-      {/* Eyes */}
-      <circle cx="194" cy="128" r="4.5" />
-      <circle cx="226" cy="128" r="4.5" />
-      {/* Big grin */}
-      <path
-        d="M188 150 Q210 176 232 150 Q220 158 210 158 Q200 158 188 150 Z"
-        fill="#000"
-        strokeWidth={3}
-      />
-      {/* Teeth highlight */}
-      <path d="M196 155 Q210 160 224 155" stroke={GREEN} strokeWidth={2} fill="none" />
-    </g>
+    </>
   );
 }
 
-function ChestBadge({ cx, cy, r }: { cx: number; cy: number; r: number }) {
-  // Mini split-coin logo
-  const S = {
-    top: [cx, cy - r],
-    p1: [cx + r * 0.4, cy - r * 0.35],
-    p2: [cx - r * 0.3, cy - r * 0.05],
-    p3: [cx + r * 0.25, cy + r * 0.2],
-    bottom: [cx, cy + r],
-  } as const;
-  const leftD = `M ${S.top[0]} ${S.top[1]} L ${S.p1[0]} ${S.p1[1]} L ${S.p2[0]} ${S.p2[1]} L ${S.p3[0]} ${S.p3[1]} L ${S.bottom[0]} ${S.bottom[1]} A ${r} ${r} 0 0 0 ${S.top[0]} ${S.top[1]} Z`;
-  const rightD = `M ${S.top[0]} ${S.top[1]} L ${S.p1[0]} ${S.p1[1]} L ${S.p2[0]} ${S.p2[1]} L ${S.p3[0]} ${S.p3[1]} L ${S.bottom[0]} ${S.bottom[1]} A ${r} ${r} 0 0 1 ${S.top[0]} ${S.top[1]} Z`;
-  return (
-    <g>
-      <circle cx={cx} cy={cy} r={r + 3} fill={WHITE} stroke={STROKE} strokeWidth={2.5} />
-      <path d={leftD} fill={GREEN} stroke={STROKE} strokeWidth={1.5} />
-      <path d={rightD} fill={GREEN} stroke={STROKE} strokeWidth={1.5} />
-    </g>
-  );
-}
+/* ---------------------------------------------------------------- motion */
 
-function MiniPhone({ cx, cy }: { cx: number; cy: number }) {
-  const w = 26;
-  const h = 38;
-  const x = cx - w / 2;
-  const y = cy - h / 2;
-  return (
-    <g>
-      <rect x={x} y={y} width={w} height={h} rx={5} fill="#000" stroke={STROKE} strokeWidth={2.5} />
-      <rect x={x + 2} y={y + 4} width={w - 4} height={h - 8} rx={3} fill="#111" />
-      <circle cx={cx} cy={cy} r={5} fill={GREEN} stroke={STROKE} strokeWidth={1.2} />
-      <path
-        d={`M${cx + 1} ${cy - 3} L${cx - 2} ${cy - 0.5} L${cx + 1} ${cy - 0.5} L${cx - 1} ${cy + 3} L${cx + 2} ${cy + 0.5} L${cx - 1} ${cy + 0.5} Z`}
-        fill="#000"
-      />
-    </g>
-  );
-}
+const STYLES = `
+.slm-arm-rest { animation: slm-arm-rest 4.8s steps(1, end) infinite; }
+.slm-arm-scratch { opacity: 0; animation: slm-arm-scratch 4.8s steps(1, end) infinite; }
+@keyframes slm-arm-rest { 0%, 46% { opacity: 1 } 48%, 84% { opacity: 0 } 86%, 100% { opacity: 1 } }
+@keyframes slm-arm-scratch { 0%, 46% { opacity: 0 } 48%, 84% { opacity: 1 } 86%, 100% { opacity: 0 } }
+.slm-scratch-wiggle { animation: slm-wiggle 0.32s ease-in-out infinite; }
+@keyframes slm-wiggle { 0%, 100% { transform: translate(0, 0) } 50% { transform: translate(3px, -3px) } }
 
-/* ------------------------------------------------------------------ */
-
-function Doodles({ pose }: { pose: Pose }) {
-  const items =
-    pose === "excited"
-      ? [
-          { x: 90, y: 110, kind: "spark" },
-          { x: 340, y: 90, kind: "spark" },
-          { x: 70, y: 230, kind: "coin" },
-          { x: 350, y: 240, kind: "spark" },
-          { x: 100, y: 310, kind: "diamond" },
-          { x: 320, y: 320, kind: "coin" },
-          { x: 50, y: 170, kind: "diamond" },
-          { x: 360, y: 170, kind: "spark" },
-        ]
-      : [
-          { x: 330, y: 130, kind: "spark" },
-          { x: 90, y: 190, kind: "diamond" },
-          { x: 340, y: 260, kind: "coin" },
-          { x: 70, y: 310, kind: "spark" },
-        ];
-  return (
-    <g>
-      {items.map((d, i) => (
-        <Doodle key={i} {...d} />
-      ))}
-    </g>
-  );
+.slm-glance { animation: slm-glance 4.8s ease-in-out infinite; }
+@keyframes slm-glance {
+  0%, 40%, 100% { transform: translate(0, 0) }
+  50%, 82% { transform: translate(-16px, -4px) }
 }
+.slm-sweat { animation: slm-sweat 2.4s ease-in-out infinite; }
+@keyframes slm-sweat { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(6px) } }
 
-function Doodle({ x, y, kind }: { x: number; y: number; kind: string }) {
-  if (kind === "spark") {
-    return (
-      <g transform={`translate(${x} ${y})`} stroke="#000" strokeWidth={2.5} strokeLinecap="round" fill="none">
-        <path d="M0 -8 L0 8 M-8 0 L8 0" />
-      </g>
-    );
-  }
-  if (kind === "diamond") {
-    return (
-      <g transform={`translate(${x} ${y}) rotate(45)`} stroke="#000" strokeWidth={2} fill={GREEN}>
-        <rect x="-5" y="-5" width="10" height="10" />
-      </g>
-    );
-  }
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <ellipse cx="0" cy="0" rx="10" ry="4" fill={GREEN} stroke="#000" strokeWidth={2} />
-      <path d="M-10 0 L-10 3 Q0 7 10 3 L10 0" fill={EDGE} stroke="#000" strokeWidth={2} />
-    </g>
-  );
+.slm-buzz { transform-box: fill-box; transform-origin: center; animation: slm-buzz 3.2s ease-in-out infinite; }
+@keyframes slm-buzz {
+  0%, 78%, 100% { transform: rotate(0deg) }
+  82% { transform: rotate(-5deg) } 86% { transform: rotate(5deg) }
+  90% { transform: rotate(-4deg) } 94% { transform: rotate(3deg) }
 }
+.slm-bob { animation: slm-bob 2.6s ease-in-out infinite; }
+@keyframes slm-bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
+
+.slm-bounce { animation: slm-bounce 0.9s ease-in-out infinite; }
+@keyframes slm-bounce { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-7px) } }
+.slm-pump { transform-origin: 244px 294px; animation: slm-pump 0.9s ease-in-out infinite; }
+@keyframes slm-pump { 0%, 100% { transform: rotate(0deg) } 50% { transform: rotate(-14deg) } }
+.slm-pulse { transform-box: fill-box; transform-origin: center; animation: slm-pulse 0.9s ease-in-out infinite; }
+@keyframes slm-pulse { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.06) } }
+.slm-coin { transform-box: fill-box; transform-origin: center; animation: slm-coin 2.4s ease-in-out infinite; }
+.slm-coin-2 { animation-delay: -0.8s; }
+.slm-coin-3 { animation-delay: -1.6s; }
+@keyframes slm-coin { 0%, 100% { transform: translateY(0) rotate(0deg) } 50% { transform: translateY(-10px) rotate(14deg) } }
+`;
