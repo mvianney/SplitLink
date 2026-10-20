@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #000000;
+  --color-fg: #ffffff;
+  --color-card: #1a1a1a;
+  --color-accent: #39ff14;
+  --color-accent-dim: #2bd20f;
+  --color-muted: #9a9a9a;
+  --color-border: #262626;
+
+  --font-sans: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+
+  --tracking-tight: -0.02em;
+  --tracking-tighter: -0.03em;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #000;
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--tilt, 15deg)); }
+  50% { transform: translate3d(0, -14px, 0) rotate(calc(var(--tilt, 15deg) + 4deg)); }
+}
+
+@keyframes drift-slow {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--tilt, -10deg)); }
+  50% { transform: translate3d(10px, 10px, 0) rotate(calc(var(--tilt, -10deg) - 5deg)); }
+}
+
+@keyframes idle-worry {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-4px) rotate(1.5deg); }
+}
+
+@keyframes idle-excited {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  25% { transform: translateY(-6px) rotate(2deg); }
+  75% { transform: translateY(-2px) rotate(-1deg); }
+}
+
+@keyframes split-pulse {
+  0% { transform: translateX(0); }
+  40% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes split-pulse-r {
+  0% { transform: translateX(0); }
+  40% { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
